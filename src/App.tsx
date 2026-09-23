@@ -1,12 +1,30 @@
 import { useState } from "react";
 import "./App.css";
 
+type KeyBindingProps = {
+  text: string;
+  binding: string;
+  onClick?: (value: string) => void;
+};
+
+function KeyBinding({ text, binding, onClick }: KeyBindingProps) {
+  return (
+    <div className="key-binding">
+      <p>{text}</p>
+      <p className="selected-key">{binding}</p>
+      <button className="menu-button" onClick={() => onClick}>
+        Change
+      </button>
+    </div>
+  );
+}
+
 type MenuProps = {
   keyBindings: string[];
   setKeyBindings?: void;
 };
 
-function Menu( {keyBindings}: MenuProps) {
+function Menu({ keyBindings }: MenuProps) {
   const [menu, setMenu] = useState("main-menu");
 
   const moveToConfiguration = () => {
@@ -37,30 +55,16 @@ function Menu( {keyBindings}: MenuProps) {
         {menu === "config-menu" && (
           <div className="config-menu">
             <p>Player 1:</p>
-            <div className="key-binding">
-              <p>Up: <span className="key">{keyBindings[0]}</span></p>
-              <button className="menu-button">Change</button>
-            </div>
-
-            <div className="key-binding">
-              <p>Down: <span className="key">{keyBindings[1]}</span></p>
-              <button className="menu-button">Change</button>
-            </div>
+            <KeyBinding text="Up:" binding={keyBindings[0]} />
+            <KeyBinding text="Down:" binding={keyBindings[1]} />
 
             <p>Player 2:</p>
 
-            <div className="key-binding">
-              <p>Up: <span className="key">{keyBindings[2]}</span></p>
-              <button className="menu-button">Change</button>
-            </div>
-
-            <div className="key-binding">
-              <p>Down: <span className="key">{keyBindings[3]}</span></p>
-              <button className="menu-button">Change</button>
-            </div>
+            <KeyBinding text="Up:" binding={keyBindings[2]} />
+            <KeyBinding text="Down:" binding={keyBindings[3]} />
 
             <button
-              className="menu-button"
+              className="menu-button config-back"
               onClick={() => setMenu("main-menu")}
             >
               Back
@@ -86,7 +90,10 @@ function Menu( {keyBindings}: MenuProps) {
 
 function App() {
   const [keyBindings, setKeyBindings] = useState<string[]>([
-    'w', 'a', 'p', 'l'
+    "w",
+    "a",
+    "p",
+    "l",
   ]);
 
   return (
