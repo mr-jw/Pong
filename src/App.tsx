@@ -1,19 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 type KeyBindingProps = {
   text: string;
   binding: string;
-  onClick?: (value: string) => void;
+  index: number;
+  changeKeyBinding: (index: number, binding: string) => void;
 };
 
-function KeyBinding({ text, binding, onClick }: KeyBindingProps) {
+function KeyBinding({
+  text,
+  binding,
+  index,
+  changeKeyBinding,
+}: KeyBindingProps) {
+  // is waiting for key?..
+  const [isWaitingForKey, setIsWaitingForKey] = useState(false);
+
+  const handleChange = () => {
+    setIsWaitingForKey(true);
+  };
+
+  useEffect(() => {
+    if (!isWaitingForKey) return;
+
+    const handleKeyPress = (event: KeyboardEvent) => {
+      changeKeyBinding(index, event.key);
+      setIsWaitingForKey(false);
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [isWaitingForKey]);
+
   return (
     <div className="key-binding">
       <p>{text}</p>
-      <p className="selected-key">{binding}</p>
-      <button className="menu-button" onClick={() => onClick}>
-        Change
+      <button className="menu-button" onClick={handleChange}>
+        {isWaitingForKey ? 'Enter a key...' : binding}
       </button>
     </div>
   );
@@ -21,10 +48,10 @@ function KeyBinding({ text, binding, onClick }: KeyBindingProps) {
 
 type MenuProps = {
   keyBindings: string[];
-  setKeyBindings?: void;
+  changeKeyBinding: (index: number, binding: string) => void;
 };
 
-function Menu({ keyBindings }: MenuProps) {
+function Menu({ keyBindings, changeKeyBinding }: MenuProps) {
   const [menu, setMenu] = useState("main-menu");
 
   const moveToConfiguration = () => {
@@ -55,13 +82,33 @@ function Menu({ keyBindings }: MenuProps) {
         {menu === "config-menu" && (
           <div className="config-menu">
             <p>Player 1:</p>
-            <KeyBinding text="Up:" binding={keyBindings[0]} />
-            <KeyBinding text="Down:" binding={keyBindings[1]} />
+            <KeyBinding
+              text="Up:"
+              binding={keyBindings[0]}
+              changeKeyBinding={changeKeyBinding}
+              index={0}
+            />
+            <KeyBinding
+              text="Down:"
+              binding={keyBindings[1]}
+              changeKeyBinding={changeKeyBinding}
+              index={1}
+            />
 
             <p>Player 2:</p>
 
-            <KeyBinding text="Up:" binding={keyBindings[2]} />
-            <KeyBinding text="Down:" binding={keyBindings[3]} />
+            <KeyBinding
+              text="Up:"
+              binding={keyBindings[2]}
+              changeKeyBinding={changeKeyBinding}
+              index={2}
+            />
+            <KeyBinding
+              text="Down:"
+              binding={keyBindings[3]}
+              changeKeyBinding={changeKeyBinding}
+              index={3}
+            />
 
             <button
               className="menu-button config-back"
@@ -96,9 +143,22 @@ function App() {
     "l",
   ]);
 
+  const changeKeyBinding = (index: number, binding: string) => {
+    // pass current state of array into the function.
+    setKeyBindings((current) => {
+      const newBinding = [...current]; // make copy of array.
+
+      // assign specified index the given binding.
+      newBinding[index] = binding;
+
+      // return new array.
+      return newBinding;
+    });
+  };
+
   return (
     <>
-      <Menu keyBindings={keyBindings} />
+      <Menu keyBindings={keyBindings} changeKeyBinding={changeKeyBinding} />
     </>
   );
 }
