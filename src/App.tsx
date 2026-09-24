@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Menu } from "./Menu";
 import "./App.css";
 
@@ -24,6 +24,7 @@ function Game() {
 function App() {
   const [hideMainMenu, setHideMainMenu] = useState(false);
   const [gameStarted, setGameStarted] = useState(false);
+
   const [keyBindings, setKeyBindings] = useState<string[]>([
     "w",
     "a",
@@ -79,6 +80,25 @@ function App() {
     setHideMainMenu(true);
     setGameStarted(true);
   };
+
+  // track escape key press during game.
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const handleEscapePress = (event: KeyboardEvent) => {
+      if (event.key === "esc") {
+        setGameStarted(false);
+        setHideMainMenu(false);
+        // probably reset scores here too.
+      }
+    };
+
+    window.addEventListener("keydown", handleEscapePress);
+
+    return () => {
+      window.removeEventListener("keydown", handleEscapePress);
+    };
+  }, [gameStarted]);
 
   return (
     <div className="app-container">
