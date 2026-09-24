@@ -1,157 +1,29 @@
-import { useEffect, useState } from "react";
-import type { ReactNode } from "react";
+import { useState } from "react";
+import { Menu } from "./Menu";
 import "./App.css";
 
-type KeyBindingElementProps = {
-  player: number;
-  text: string;
-  binding: string;
-  index: number;
-  changeKeyBinding: (index: number, binding: string) => void;
-};
-
-function KeyBindingElement({
-  player,
-  text,
-  binding,
-  index,
-  changeKeyBinding,
-}: KeyBindingElementProps) {
-  // is waiting for key?..
-  const [isWaitingForKey, setIsWaitingForKey] = useState(false);
-
-  const handleChange = () => {
-    setIsWaitingForKey(true);
-  };
-
-  useEffect(() => {
-    if (!isWaitingForKey) return;
-
-    const handleKeyPress = (event: KeyboardEvent) => {
-      changeKeyBinding(index, event.key);
-      setIsWaitingForKey(false);
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-
-    return () => {
-      window.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [isWaitingForKey]);
+function Game() {
+  const [gameStarted, setGameStarted] = useState(false);
+  const [playerOneScore, setPlayerOneScore] = useState(120);
+  const [playerTwoScore, setPlayerTwoScore] = useState(40);
 
   return (
-    <div className="key-binding-container">
-      <p>{text}</p>
-      <button className="menu-button" onClick={handleChange}>
-        {isWaitingForKey ? "Enter a key..." : binding}
-      </button>
+    <div className="game-container">
+      <div className="score-container">
+        <p className="score">{playerOneScore}</p>
+
+        <p className="score">{playerTwoScore}</p>
+      </div>
+      <div className="game-area">
+        <div className="game-area-seperator"></div>
+      </div>
     </div>
   );
 }
 
-type KeyBindingData = {
-  player: number;
-  text: string;
-  binding: string;
-  changeKeyBinding: (index: number, binding: string) => void;
-  index: number;
-};
-
-type MenuProps = {
-  keyBindingData: KeyBindingData[];
-};
-
-function Menu({ keyBindingData }: MenuProps) {
-  const [menu, setMenu] = useState("main-menu");
-
-  const playerOneComponents = keyBindingData.filter(
-    (component) => component.player === 1,
-  );
-  const playerTwoComponents = keyBindingData.filter(
-    (component) => component?.player === 2,
-  );
-
-  const moveToConfiguration = () => {
-    setMenu("config-menu");
-  };
-
-  const moveToAbout = () => {
-    setMenu("about");
-  };
-
-  return (
-    <>
-      <div className="main-menu">
-        <p className="title">Pong</p>
-
-        {menu === "main-menu" && (
-          <div className="main-menu-buttons">
-            <button className="menu-button">Play</button>
-            <button className="menu-button" onClick={moveToConfiguration}>
-              Configuration
-            </button>
-            <button className="menu-button" onClick={moveToAbout}>
-              About
-            </button>
-          </div>
-        )}
-
-        {menu === "config-menu" && (
-          <div className="config-menu">
-            <p>Player 1:</p>
-        
-            {/* render player one key binding elements */}
-            {playerOneComponents.map((data) => (
-              <KeyBindingElement
-                key={data.index}
-                player={data.player}
-                text={data.text}
-                binding={data.binding}
-                index={data.index}
-                changeKeyBinding={data.changeKeyBinding}
-              />
-            ))}
-
-            <p>Player 2:</p>
-
-            {/* render player two key binding elements */}
-            {playerTwoComponents.map((data) => (
-              <KeyBindingElement
-                key={data.index}
-                player={data.player}
-                text={data.text}
-                binding={data.binding}
-                index={data.index}
-                changeKeyBinding={data.changeKeyBinding}
-              />
-            ))}
-
-            <button
-              className="menu-button config-back"
-              onClick={() => setMenu("main-menu")}
-            >
-              Back
-            </button>
-          </div>
-        )}
-
-        {menu === "about" && (
-          <>
-            <p>...</p>
-            <button
-              className="menu-button"
-              onClick={() => setMenu("main-menu")}
-            >
-              Back
-            </button>
-          </>
-        )}
-      </div>
-    </>
-  );
-}
-
 function App() {
+  const [hideMainMenu, setHideMainMenu] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
   const [keyBindings, setKeyBindings] = useState<string[]>([
     "w",
     "a",
@@ -203,10 +75,19 @@ function App() {
     },
   ];
 
+  const startGame = () => {
+    setHideMainMenu(true);
+    setGameStarted(true);
+  };
+
   return (
-    <>
-      <Menu keyBindingData={keyBindingData} />
-    </>
+    <div className="app-container">
+      {!hideMainMenu && (
+        <Menu keyBindingData={keyBindingData} startGame={startGame} />
+      )}
+
+      {gameStarted && <Game />}
+    </div>
   );
 }
 

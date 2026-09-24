@@ -1,4 +1,8 @@
 body {
+  background-color: black;
+}
+
+.app-container {
   background: black;
   border: 1px solid blue;
   border-radius: 15px;
@@ -59,4 +63,31 @@ h2,
 
 .config-back {
   margin-top: 30px;
+}
+
+.game-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.score-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+
+.score {
+  font-size: 40px;
+}
+
+.game-area {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.game-area-seperator {
+  width: 1px;
+  height: 78vh;
+  background-color: white;
 }
