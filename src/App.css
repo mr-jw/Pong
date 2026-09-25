@@ -85,7 +85,7 @@ h2,
   flex-direction: row;
   justify-content: space-between;
   margin: 10px;
-  height: 78vh;
+  height: 500px;
 }
 
 .game-area-separator {
