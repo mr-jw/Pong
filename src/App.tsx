@@ -8,24 +8,55 @@ function Player( {player, bindings}: {player: 1 | 2, bindings: string[]}) {
   const [yPos, setYPos] = useState(0);
 
   useEffect(() => {
+    // keep track of key presses.
+    let upKeyPressed = false;
+    let downKeyPressed = false;
 
-    const handleMovement = (event: KeyboardEvent) => {
-      const element = document.getElementsByClassName(className)[0] as HTMLElement | undefined;
-
-      if (!element) return;
-
+    // track keep pressing / releasing.
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === bindings[0]) {
-        setYPos((current) => current -15);
+        upKeyPressed = true;
       }
-      else if (event.key === bindings[1]) {
-       setYPos((current) => current +15);
-      }
-    };
 
-    window.addEventListener('keydown', handleMovement);
+      if (event.key === bindings[1]) {
+        downKeyPressed = true;
+      }
+    }
+
+    const handleKeyRelease = (event: KeyboardEvent) => {
+      if(event.key === bindings[0]) {
+        upKeyPressed = false;
+      }
+
+      if (event.key === bindings[1]) {
+        downKeyPressed = false;
+      }
+    }
+
+    let animationFrame: number;
+
+    const movePlayer = () => {
+      if (upKeyPressed) {
+        setYPos((current) => current - 3);
+      }
+
+      if (downKeyPressed) {
+        setYPos((current) => current + 3);
+      }
+
+      animationFrame = requestAnimationFrame(movePlayer);
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyRelease);
+
+    animationFrame = requestAnimationFrame(movePlayer);
 
     return () => { 
-      window.removeEventListener('keydown', handleMovement); 
+      // cleanup.
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyRelease); 
+      cancelAnimationFrame(animationFrame);
     };
   }, [bindings, className]);
 
