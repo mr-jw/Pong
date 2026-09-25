@@ -83,11 +83,29 @@ h2,
 .game-area {
   display: flex;
   flex-direction: row;
-  justify-content: center;
+  justify-content: space-between;
+  margin: 10px;
+  height: 78vh;
 }
 
-.game-area-seperator {
+.game-area-separator {
   width: 1px;
-  height: 78vh;
+  height: 100%;
   background-color: white;
+}
+
+.playerOne {
+  width: 10px;
+  height: 50px;
+  margin-left: 20px;
+  background: red;
+  position: relative;
+}
+
+.playerTwo {
+  width: 10px;
+  height: 50px;
+  margin-right: 20px;
+  background: blue;
+  position: relative;
 }

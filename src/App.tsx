@@ -2,7 +2,39 @@ import { useEffect, useState } from "react";
 import { Menu } from "./Menu";
 import "./App.css";
 
-function Game() {
+function Player( {player, bindings}: {player: 1 | 2, bindings: string[]}) {
+  const className = player === 1 ? 'playerOne' : 'playerTwo';
+
+  const [yPos, setYPos] = useState(0);
+
+  useEffect(() => {
+
+    const handleMovement = (event: KeyboardEvent) => {
+      const element = document.getElementsByClassName(className)[0] as HTMLElement | undefined;
+
+      if (!element) return;
+
+      if (event.key === bindings[0]) {
+        setYPos((current) => current -15);
+      }
+      else if (event.key === bindings[1]) {
+       setYPos((current) => current +15);
+      }
+    };
+
+    window.addEventListener('keydown', handleMovement);
+
+    return () => { 
+      window.removeEventListener('keydown', handleMovement); 
+    };
+  }, [bindings, className]);
+
+  return (
+     <div className={className} style={{top: `${yPos}px`}}/>
+  );
+}
+
+function Game({ playerOneBindings, playerTwoBindings }: { playerOneBindings: string[]; playerTwoBindings: string[] }) {
   const [gameStarted, setGameStarted] = useState(false);
   const [playerOneScore, setPlayerOneScore] = useState(120);
   const [playerTwoScore, setPlayerTwoScore] = useState(40);
@@ -15,7 +47,9 @@ function Game() {
         <p className="score">{playerTwoScore}</p>
       </div>
       <div className="game-area">
-        <div className="game-area-seperator"></div>
+        <Player player={1} bindings={playerOneBindings}/>
+        <div className="game-area-separator"></div>
+        <Player player={2} bindings={playerTwoBindings}/>
       </div>
     </div>
   );
@@ -76,6 +110,15 @@ function App() {
     },
   ];
 
+  // retrieve key bindings from the data by first filtering and then mapping.
+  const playerOneKeyBindings = keyBindingData
+    .filter((bindings) => bindings.player === 1)
+    .map((bindings) => bindings.binding);
+
+  const playerTwoKeyBindings = keyBindingData
+    .filter((bindings) => bindings.player === 2)
+    .map((bindings) => bindings.binding);
+
   const startGame = () => {
     setHideMainMenu(true);
     setGameStarted(true);
@@ -86,7 +129,8 @@ function App() {
     if (!gameStarted) return;
 
     const handleEscapePress = (event: KeyboardEvent) => {
-      if (event.key === "esc") {
+      console.log(`Key pressed: ${event.key}`);
+      if (event.key === "Escape") {
         setGameStarted(false);
         setHideMainMenu(false);
         // probably reset scores here too.
@@ -106,7 +150,7 @@ function App() {
         <Menu keyBindingData={keyBindingData} startGame={startGame} />
       )}
 
-      {gameStarted && <Game />}
+      {gameStarted && <Game playerOneBindings={playerOneKeyBindings} playerTwoBindings={playerTwoKeyBindings} />}
     </div>
   );
 }
