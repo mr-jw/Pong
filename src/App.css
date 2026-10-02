@@ -86,6 +86,9 @@ h2,
   justify-content: space-between;
   margin: 10px;
   height: 500px;
+  width: inherit;
+  position: relative;
+  overflow: hidden;
 }
 
 .game-area-separator {
@@ -108,4 +111,14 @@ h2,
   margin-right: 20px;
   background: blue;
   position: relative;
+}
+
+.ball {
+  background: white;
+  width: 20px;
+  height: 20px;
+  position: absolute;
+  border-radius: 10px;
+  left: 50%;
+  top: 50%;
 }

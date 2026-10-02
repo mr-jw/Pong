@@ -67,7 +67,7 @@ function Menu({ keyBindingData, startGame }: MenuProps) {
     (component) => component.player === 1,
   );
   const playerTwoComponents = keyBindingData.filter(
-    (component) => component?.player === 2,
+    (component) => component.player === 2,
   );
 
   // navigation functions...
