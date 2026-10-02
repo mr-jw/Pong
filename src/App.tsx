@@ -28,7 +28,14 @@ function Ball({ gameAreaRef, playerOneRef, playerTwoRef }: BallProps) {
   const [renderX, setRenderX] = useState(100);
   const [renderY, setRenderY] = useState(100);
 
-  const checkWallCollisions = (areaHeight: number, ballHeight: number) => {
+  const checkWallCollisions = () => {
+    const areaHeight = gameAreaRef.current?.getBoundingClientRect().height;
+    const ballHeight = ballRef.current?.getBoundingClientRect().height;
+
+    if (areaHeight === undefined || ballHeight === undefined) {
+      return;
+    }
+
     if (positionY.current <= 0) {
       positionY.current = 0;
       velocityY.current *= -1;
@@ -87,15 +94,10 @@ function Ball({ gameAreaRef, playerOneRef, playerTwoRef }: BallProps) {
 
     let animationFrame: number;
 
-    const areaHeight = gameAreaRef.current?.getBoundingClientRect().height;
-    const ballHeight = ballRef.current?.getBoundingClientRect().height;
-
-    if (areaHeight === undefined || ballHeight === undefined) return;
-
     const move = () => {
       updateBallPosition();
 
-      checkWallCollisions(areaHeight, ballHeight);
+      checkWallCollisions();
 
       checkPlayerCollisions();
 
