@@ -8,7 +8,13 @@ import {
 import { Menu } from "./Menu";
 import "./App.css";
 
-function Ball() {
+type BallProps = {
+  gameAreaRef: React.RefObject<HTMLDivElement | null>;
+  playerOneRef: React.RefObject<HTMLDivElement | null>;
+  playerTwoRef: React.RefObject<HTMLDivElement | null>;
+};
+
+function Ball({ gameAreaRef, playerOneRef, playerTwoRef }: BallProps) {
   const ballRef = useRef<HTMLDivElement>(null);
 
   const [paused, setPaused] = useState(false);
@@ -17,33 +23,79 @@ function Ball() {
   const positionY = useRef(100);
 
   const velocityX = useRef(3);
-  const velocityY = useRef(3);
+  const velocityY = useRef(2);
 
   const [renderX, setRenderX] = useState(100);
   const [renderY, setRenderY] = useState(100);
 
-  const checkWallCollisions = () => {
+  const checkWallCollisions = (areaHeight: number, ballHeight: number) => {
+    if (positionY.current <= 0) {
+      positionY.current = 0;
+      velocityY.current *= -1;
+    }
 
+    if (positionY.current + ballHeight >= areaHeight) {
+      positionY.current = areaHeight - ballHeight;
+      velocityY.current *= -1;
+    }
   };
 
   const checkPlayerCollisions = () => {
+    const playerOneRect = playerOneRef.current?.getBoundingClientRect();
+    const playerTwoRect = playerTwoRef.current?.getBoundingClientRect();
+    const ballRect = ballRef.current?.getBoundingClientRect();
 
-  }
+    if (
+      playerOneRect === undefined ||
+      playerTwoRect === undefined ||
+      ballRect === undefined
+    ) {
+      return;
+    }
+
+    // AABB collision variables.
+    const playerOneCollision =
+      ballRect.right >= playerOneRect.left &&
+      ballRect.left <= playerOneRect.right &&
+      ballRect.bottom >= playerOneRect.top &&
+      ballRect.top <= playerOneRect.bottom;
+
+    const playerTwoCollision =
+      ballRect.right >= playerTwoRect.left &&
+      ballRect.left <= playerTwoRect.right &&
+      ballRect.bottom >= playerTwoRect.top &&
+      ballRect.top <= playerTwoRect.bottom;
+
+    if (playerOneCollision) {
+      positionX.current += 10;
+      velocityX.current *= -1;
+    }
+
+    if (playerTwoCollision) {
+      positionX.current -= 10;
+      velocityX.current *= -1;
+    }
+  };
 
   const updateBallPosition = () => {
     positionX.current += velocityX.current;
     positionY.current += velocityY.current;
-  }
-  
+  };
+
   useEffect(() => {
     if (paused) return;
 
     let animationFrame: number;
 
+    const areaHeight = gameAreaRef.current?.getBoundingClientRect().height;
+    const ballHeight = ballRef.current?.getBoundingClientRect().height;
+
+    if (areaHeight === undefined || ballHeight === undefined) return;
+
     const move = () => {
       updateBallPosition();
 
-      checkWallCollisions();
+      checkWallCollisions(areaHeight, ballHeight);
 
       checkPlayerCollisions();
 
@@ -73,19 +125,18 @@ function Ball() {
 type PlayerProps = {
   player: 1 | 2;
   bindings: string[];
-  playerYPos: number;
-  setPlayerYPos: Dispatch<SetStateAction<number>>;
+  playerRef: React.RefObject<HTMLDivElement | null>;
   gameAreaRef: React.RefObject<HTMLDivElement | null>;
 };
 
-function Player({ player, bindings, playerYPos, setPlayerYPos, gameAreaRef }: PlayerProps) {
-  const playerRef = useRef<HTMLDivElement>(null);
-
+function Player({ player, bindings, playerRef, gameAreaRef }: PlayerProps) {
   const className = player === 1 ? "playerOne" : "playerTwo";
+
+  const [renderY, setRenderY] = useState(100);
 
   useEffect(() => {
     if (!gameAreaRef) return;
-    
+
     // keep track of key presses.
     let upKeyPressed = false;
     let downKeyPressed = false;
@@ -119,11 +170,11 @@ function Player({ player, bindings, playerYPos, setPlayerYPos, gameAreaRef }: Pl
 
     const movePlayer = () => {
       if (upKeyPressed) {
-        setPlayerYPos((current) => (current > 0 ? current - 3 : current));
+        setRenderY((current) => (current > 0 ? current - 3 : current));
       }
 
       if (downKeyPressed) {
-        setPlayerYPos((current) =>
+        setRenderY((current) =>
           current < areaHeight - playerHeight ? current + 3 : current,
         );
       }
@@ -148,7 +199,7 @@ function Player({ player, bindings, playerYPos, setPlayerYPos, gameAreaRef }: Pl
     <div
       className={className}
       ref={playerRef}
-      style={{ top: `${playerYPos}px` }}
+      style={{ top: `${renderY}px` }}
     />
   );
 }
@@ -163,9 +214,8 @@ function Game({
   const [playerOneScore, setPlayerOneScore] = useState(120);
   const [playerTwoScore, setPlayerTwoScore] = useState(40);
 
-  const [playerOneYPos, setPlayerOneYPos] = useState(0);
-  const [playerTwoYPos, setPlayerTwoYPos] = useState(0);
-
+  const playerOneRef = useRef<HTMLDivElement>(null);
+  const playerTwoRef = useRef<HTMLDivElement>(null);
   const gameAreaRef = useRef<HTMLDivElement>(null);
 
   return (
@@ -179,17 +229,19 @@ function Game({
         <Player
           player={1}
           bindings={playerOneBindings}
-          setPlayerYPos={setPlayerOneYPos}
-          playerYPos={playerOneYPos}
+          playerRef={playerOneRef}
           gameAreaRef={gameAreaRef}
         />
         <div className="game-area-separator"></div>
-        <Ball />
+        <Ball
+          gameAreaRef={gameAreaRef}
+          playerOneRef={playerOneRef}
+          playerTwoRef={playerTwoRef}
+        />
         <Player
           player={2}
           bindings={playerTwoBindings}
-          setPlayerYPos={setPlayerTwoYPos}
-          playerYPos={playerTwoYPos}
+          playerRef={playerTwoRef}
           gameAreaRef={gameAreaRef}
         />
       </div>
