@@ -12,9 +12,11 @@ type BallProps = {
   gameAreaRef: React.RefObject<HTMLDivElement | null>;
   playerOneRef: React.RefObject<HTMLDivElement | null>;
   playerTwoRef: React.RefObject<HTMLDivElement | null>;
+  setPlayerOneScore: React.Dispatch<SetStateAction<number>>;
+  setPlayerTwoScore: React.Dispatch<SetStateAction<number>>;
 };
 
-function Ball({ gameAreaRef, playerOneRef, playerTwoRef }: BallProps) {
+function Ball({ gameAreaRef, playerOneRef, playerTwoRef, setPlayerOneScore, setPlayerTwoScore }: BallProps) {
   const ballRef = useRef<HTMLDivElement>(null);
 
   const [paused, setPaused] = useState(false);
@@ -46,6 +48,29 @@ function Ball({ gameAreaRef, playerOneRef, playerTwoRef }: BallProps) {
       velocityY.current *= -1;
     }
   };
+
+  const hasPlayerScored = () => {
+    const ballWidth = ballRef.current?.getBoundingClientRect().width;
+    const areaWidth = gameAreaRef.current?.getBoundingClientRect().width;
+
+    if (ballWidth === undefined || areaWidth === undefined) return;
+
+    // player one scores.
+    if (positionX.current + ballWidth >= areaWidth) {
+      console.log("Player One Scored!");
+      setPlayerOneScore((current) => current + 10);
+      positionX.current = 100;
+      velocityX.current *= -1;
+    }
+
+    // player two scores.
+    if (positionX.current <= 0) {
+      console.log("Player Two Scored!");
+      setPlayerTwoScore((current) => current + 10);
+      positionX.current = 100;
+      velocityX.current *= -1;
+    }
+  }
 
   const checkPlayerCollisions = () => {
     const playerOneRect = playerOneRef.current?.getBoundingClientRect();
@@ -100,6 +125,8 @@ function Ball({ gameAreaRef, playerOneRef, playerTwoRef }: BallProps) {
       checkWallCollisions();
 
       checkPlayerCollisions();
+
+      hasPlayerScored();
 
       // Update the positions rendered by React.
       setRenderX(positionX.current);
@@ -213,8 +240,8 @@ function Game({
   playerOneBindings: string[];
   playerTwoBindings: string[];
 }) {
-  const [playerOneScore, setPlayerOneScore] = useState(120);
-  const [playerTwoScore, setPlayerTwoScore] = useState(40);
+  const [playerOneScore, setPlayerOneScore] = useState(0);
+  const [playerTwoScore, setPlayerTwoScore] = useState(0);
 
   const playerOneRef = useRef<HTMLDivElement>(null);
   const playerTwoRef = useRef<HTMLDivElement>(null);
@@ -239,6 +266,8 @@ function Game({
           gameAreaRef={gameAreaRef}
           playerOneRef={playerOneRef}
           playerTwoRef={playerTwoRef}
+          setPlayerOneScore={setPlayerOneScore}
+          setPlayerTwoScore={setPlayerTwoScore}
         />
         <Player
           player={2}
